@@ -3,9 +3,6 @@ from Config.Database import Base, engine
 
 Base.metadata.create_all(bind=engine)
 
-
-
-
 app = FastAPI(
     title="Help Desk API",
 )

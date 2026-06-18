@@ -1,5 +1,5 @@
 from passlib.context import CryptContext
-# configuration for password hashing and verification using the passlib library.
+# configuration for password hashing and verification using the passlib library...
 pwd_context = CryptContext(
     schemes=["bcrypt"], 
     deprecated="auto"

@@ -1,6 +1,14 @@
 from fastapi import FastAPI
+from Config.Database import Base, engine
 
-app = FastAPI()
+Base.metadata.create_all(bind=engine)
+
+
+
+
+app = FastAPI(
+    title="Help Desk API",
+)
 
 @app.get("/")
 def home():

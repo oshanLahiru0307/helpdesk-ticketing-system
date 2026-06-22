@@ -1,8 +1,10 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 
-from Config.Database import Base, engine
-from Routes.AuthRoutes import router as auth_router
-from Routes.UserRoutes import router as user_router
+from Config.database import Base, engine
+from controllers.auth_controller import router as auth_router
+from controllers.user_controller import router as user_router
+from core.exceptions import AppException
 
 Base.metadata.create_all(bind=engine)
 
@@ -11,7 +13,15 @@ app = FastAPI(
     description="Help Desk API with JWT authentication",
 )
 
-# Register route modules
+
+@app.exception_handler(AppException)
+async def app_exception_handler(request: Request, exc: AppException):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": exc.detail},
+    )
+
+
 app.include_router(auth_router)
 app.include_router(user_router)
 

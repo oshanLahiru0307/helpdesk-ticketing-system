@@ -1,50 +1,84 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+
 from Config.Database import get_db
-from app.Models.UserModel import User
-from fastapi import HTTPException
-from Schemas.UserSchema import UserCreate, UserResponse
+from Dependencies.AuthDependency import get_current_user
+from Models.UserModel import User
+from Models.UserSerializer import user_serializer
+from Schemas.UserSchema import UserCreate, UserUpdate
+from Services.UserService import UserService
 
 router = APIRouter(
     prefix="/users",
     tags=["Users"],
 )
 
-# get all users
-@router.get("/", response_model=list[UserResponse])
-def get_users(db: Session = Depends(get_db)):
-    users = db.query(User).all()
-    return users
 
-# get user by id
-@router.get("/{user_id}", response_model=UserResponse)
-def get_user(user_id: int, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.id == user_id).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    return user
+# Create User
+@router.post("/create_new_user")
+async def create_user(
+    user: UserCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    user_service = UserService(db)
+    new_user = user_service.create(user)
+    return user_serializer(new_user)
 
-#update user by id
-@router.put("/{user_id}", response_model=UserResponse)
-def update_user(user_id: int, user: UserCreate, db: Session = Depends(get_db)):
-    db_user = db.query(User).filter(User.id == user_id).first()
-    if not db_user:
-        raise HTTPException(status_code=404, detail="User not found")
-    db_user.full_name = user.full_name
-    db_user.username = user.username
-    db_user.email = user.email
-    db_user.password = user.password
-    db_user.role = user.role
-    db.commit()
-    db.refresh(db_user)
-    return db_user
 
-#delete user by id
+# Get All Users
+@router.get("/get_all_users")
+async def get_users(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    user_service = UserService(db)
+    users = user_service.get_all()
+    return [user_serializer(u) for u in users]
+
+
+# Get current logged-in user
+@router.get("/me")
+async def get_me(current_user: User = Depends(get_current_user)):
+    return user_serializer(current_user)
+
+
+# Get Single User
+@router.get("/{user_id}")
+async def get_user(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    user_service = UserService(db)
+    user = user_service.get_by_id(user_id)
+    return user_serializer(user)
+
+
+# Update User
+@router.put("/{user_id}")
+async def update_user(
+    user_id: int,
+    user: UserUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    user_service = UserService(db)
+    updated_user = user_service.update(user_id, user)
+    return user_serializer(updated_user)
+
+
+# Delete User
 @router.delete("/{user_id}")
-def delete_user(user_id: int, db: Session = Depends(get_db)):
-    db_user = db.query(User).filter(User.id == user_id).first()
-    if not db_user:
-        raise HTTPException(status_code=404, detail="User not found")
-    db.delete(db_user)
-    db.commit()
-    return {"message": "User deleted successfully"} 
+async def delete_user(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    user_service = UserService(db)
+    deleted = user_service.delete(user_id)
+
+    if deleted:
+        return {"message": "User deleted successfully"}
+
+    raise HTTPException(status_code=404, detail="User not found")

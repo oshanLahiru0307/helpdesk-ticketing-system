@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from Config.database import SessionLocal
 from Models.user import User
-from repositories.repository import repository
+from Repositories.repository import repository
 from Services.service import JwtService
 
 security = HTTPBearer()

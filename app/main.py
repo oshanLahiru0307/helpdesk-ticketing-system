@@ -1,10 +1,12 @@
+import uvicorn
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
+
 from Config.database import Base, engine
-from controllers.auth_controller import router as auth_router
-from controllers.user_controller import router as user_router
-from core.exceptions import AppException
+from Controllers.auth_controller import router as auth_router
+from Controllers.user_controller import router as user_router
+from Core.exceptions import AppException
 
 Base.metadata.create_all(bind=engine)
 
@@ -32,4 +34,7 @@ def home():
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, 
+    host="0.0.0.0", 
+    port=8000, 
+    )

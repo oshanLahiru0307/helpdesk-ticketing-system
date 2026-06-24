@@ -5,9 +5,9 @@ from sqlalchemy.orm import Session
 
 from Config.auth_config import get_password_hash, verify_password
 from Config.settings import ALGORITHM, ACCESS_TOKEN_EXPIRE_MINUTES, SECRET_KEY
-from core.exceptions import BadRequestException, NotFoundException, UnauthorizedException
+from Core.exceptions import BadRequestException, NotFoundException, UnauthorizedException
 from Models.user import User
-from repositories.repository import repository
+from Repositories.repository import repository
 from Schemas.user_schema import UserCreate, UserLogin, UserUpdate
 
 

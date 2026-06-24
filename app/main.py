@@ -29,3 +29,7 @@ app.include_router(user_router)
 @app.get("/")
 def home():
     return {"message": "Welcome to the Help Desk API!"}
+
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)
